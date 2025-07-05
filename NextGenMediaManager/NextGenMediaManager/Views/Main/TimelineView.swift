@@ -39,27 +39,7 @@ struct TimelineView: View {
     }
     
     var filteredMediaItems: [MediaItem] {
-        let calendar = Calendar.current
-        let now = Date()
-        
-        return photoLibraryManager.mediaItems.filter { item in
-            guard let creationDate = item.asset.creationDate else { return true }
-            
-            switch selectedTimeRange {
-            case .all:
-                return true
-            case .today:
-                return calendar.isDate(creationDate, inSameDayAs: now)
-            case .week:
-                let weekAgo = calendar.date(byAdding: .weekOfYear, value: -1, to: now) ?? now
-                return creationDate >= weekAgo
-            case .month:
-                let monthAgo = calendar.date(byAdding: .month, value: -1, to: now) ?? now
-                return creationDate >= monthAgo
-            case .year:
-                let yearAgo = calendar.date(byAdding: .year, value: -1, to: now) ?? now
-                return creationDate >= yearAgo
-            }
-        }
+        // TODO: Filter based on selected time range
+        return photoLibraryManager.mediaItems
     }
 }

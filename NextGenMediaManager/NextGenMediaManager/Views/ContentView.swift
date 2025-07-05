@@ -14,17 +14,5 @@ struct ContentView: View {
                 MainTabView(selectedTab: $selectedTab)
             }
         }
-        .onAppear {
-            if photoLibraryManager.authorizationStatus == .notDetermined {
-                Task {
-                    await photoLibraryManager.requestAuthorization()
-                }
-            }
-        }
-        .onChange(of: photoLibraryManager.authorizationStatus) { status in
-            if status == .authorized {
-                showOnboarding = false
-            }
-        }
     }
 }

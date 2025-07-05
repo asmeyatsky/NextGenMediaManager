@@ -4,7 +4,6 @@ import SwiftUI
 
 struct SearchView: View {
     @EnvironmentObject var searchManager: SearchManager
-    @EnvironmentObject var photoLibraryManager: PhotoLibraryManager
     @State private var isVoiceSearchActive = false
     
     var body: some View {
@@ -17,18 +16,6 @@ struct SearchView: View {
                     
                     TextField("Search photos...", text: $searchManager.searchText)
                         .textFieldStyle(RoundedBorderTextFieldStyle())
-                        .onSubmit {
-                            Task {
-                                await searchManager.performSearch(query: searchManager.searchText, in: photoLibraryManager.mediaItems)
-                            }
-                        }
-                        .onChange(of: searchManager.searchText) { newValue in
-                            if !newValue.isEmpty {
-                                Task {
-                                    await searchManager.performSearch(query: newValue, in: photoLibraryManager.mediaItems)
-                                }
-                            }
-                        }
                     
                     Button(action: { isVoiceSearchActive.toggle() }) {
                         Image(systemName: "mic.fill")
@@ -65,9 +52,6 @@ struct SearchView: View {
                         ForEach(["Beach photos", "Family gatherings", "Text in photos", "Sunset pictures"], id: \.self) { suggestion in
                             Button(action: {
                                 searchManager.searchText = suggestion
-                                Task {
-                                    await searchManager.performSearch(query: suggestion, in: photoLibraryManager.mediaItems)
-                                }
                             }) {
                                 HStack {
                                     Image(systemName: "magnifyingglass")

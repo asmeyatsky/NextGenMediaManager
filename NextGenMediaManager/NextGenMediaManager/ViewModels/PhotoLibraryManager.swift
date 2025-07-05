@@ -9,26 +9,10 @@ class PhotoLibraryManager: ObservableObject {
     @Published var isProcessing = false
     @Published var processingProgress: Double = 0.0
     
-    private let aiProcessor = AIProcessor()
-    
-    init() {
-        authorizationStatus = PHPhotoLibrary.authorizationStatus(for: .readWrite)
-        if authorizationStatus == .authorized {
-            Task {
-                await loadMediaItems()
-            }
-        }
-    }
-    
     func requestAuthorization() async {
         let status = await PHPhotoLibrary.requestAuthorization(for: .readWrite)
         await MainActor.run {
             self.authorizationStatus = status
-            if status == .authorized {
-                Task {
-                    await self.loadMediaItems()
-                }
-            }
         }
     }
     
@@ -55,14 +39,6 @@ class PhotoLibraryManager: ObservableObject {
             
             Task { @MainActor in
                 self.processingProgress = Double(index) / Double(assets.count)
-            }
-        }
-        
-        // Process items with AI
-        for i in 0..<items.count {
-            items[i] = await aiProcessor.analyzeMediaItem(items[i])
-            await MainActor.run {
-                self.processingProgress = Double(i) / Double(items.count)
             }
         }
         
