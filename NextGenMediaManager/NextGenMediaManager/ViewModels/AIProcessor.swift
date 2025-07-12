@@ -12,7 +12,8 @@ class AIProcessor: ObservableObject {
         var updatedItem = item
         
         // Image analysis using Vision framework
-        guard let image = await loadImage(from: item.asset) else { return item }
+        guard let asset = item.asset,
+              let image = await loadImage(from: asset) else { return item }
         
         // Object Detection
         if let objects = await detectObjects(in: image) {

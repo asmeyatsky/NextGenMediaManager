@@ -1,4 +1,3 @@
-// ContentView - Replace this with actual code
 import SwiftUI
 
 struct ContentView: View {
@@ -12,6 +11,24 @@ struct ContentView: View {
                 OnboardingView(showOnboarding: $showOnboarding)
             } else {
                 MainTabView(selectedTab: $selectedTab)
+                    .task {
+                        if photoLibraryManager.mediaItems.isEmpty {
+                            await photoLibraryManager.loadMediaItems()
+                        }
+                    }
+            }
+        }
+        .task {
+            if photoLibraryManager.authorizationStatus == .notDetermined {
+                await photoLibraryManager.requestAuthorization()
+            }
+        }
+        .onChange(of: photoLibraryManager.authorizationStatus) { _, newStatus in
+            if newStatus == .authorized {
+                showOnboarding = false
+                Task {
+                    await photoLibraryManager.loadMediaItems()
+                }
             }
         }
     }

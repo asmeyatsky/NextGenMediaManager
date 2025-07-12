@@ -21,13 +21,23 @@ class SearchManager: ObservableObject {
         
         // Filter items based on query
         let results = items.filter { item in
+            // Check file name
+            if let fileName = item.fileName, fileName.localizedCaseInsensitiveContains(processedQuery) {
+                return true
+            }
+            
+            // Check display name
+            if item.displayName.localizedCaseInsensitiveContains(processedQuery) {
+                return true
+            }
+            
             // Check tags
             if item.tags.contains(where: { $0.localizedCaseInsensitiveContains(processedQuery) }) {
                 return true
             }
             
             // Check text content
-            if item.textContent.localizedCaseInsensitiveContains(processedQuery) {
+            if !item.textContent.isEmpty && item.textContent.localizedCaseInsensitiveContains(processedQuery) {
                 return true
             }
             
@@ -37,8 +47,21 @@ class SearchManager: ObservableObject {
             }
             
             // Check scene
-            if item.scene.localizedCaseInsensitiveContains(processedQuery) {
+            if !item.scene.isEmpty && item.scene.localizedCaseInsensitiveContains(processedQuery) {
                 return true
+            }
+            
+            // Check event type
+            if !item.eventType.isEmpty && item.eventType.localizedCaseInsensitiveContains(processedQuery) {
+                return true
+            }
+            
+            // Simple content search for basic terms
+            if processedQuery.count > 2 {
+                let basicTerms = ["photo", "image", "picture", "video", "movie"]
+                if basicTerms.contains(where: { $0.localizedCaseInsensitiveContains(processedQuery) }) {
+                    return item.isVideo || !item.isVideo // Match all for basic terms
+                }
             }
             
             return false

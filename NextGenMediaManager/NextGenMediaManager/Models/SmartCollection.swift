@@ -1,4 +1,3 @@
-// SmartCollection Model - Replace this with actual code
 import Foundation
 import UIKit
 

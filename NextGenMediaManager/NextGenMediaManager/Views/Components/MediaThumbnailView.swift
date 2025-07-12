@@ -1,21 +1,23 @@
-// MediaThumbnailView - Replace this with actual code
 import SwiftUI
 import Photos
 
 struct MediaThumbnailView: View {
     let mediaItem: MediaItem
+    @EnvironmentObject var photoLibraryManager: PhotoLibraryManager
     @State private var thumbnail: UIImage?
     
     var body: some View {
-        ZStack {
-            if let image = thumbnail {
+        NavigationLink(destination: MediaDetailView(mediaItem: mediaItem)) {
+            ZStack {
+            if let image = thumbnail ?? mediaItem.thumbnail {
                 Image(uiImage: image)
                     .resizable()
                     .aspectRatio(contentMode: .fill)
                     .frame(width: 100, height: 100)
                     .clipped()
+                    .cornerRadius(8)
             } else {
-                Rectangle()
+                RoundedRectangle(cornerRadius: 8)
                     .fill(Color.gray.opacity(0.3))
                     .frame(width: 100, height: 100)
                     .overlay(
@@ -25,29 +27,37 @@ struct MediaThumbnailView: View {
             }
             
             // Overlay for video indicator
-            if mediaItem.asset.mediaType == .video {
-                Image(systemName: "play.circle.fill")
-                    .font(.title2)
-                    .foregroundColor(.white)
-                    .shadow(radius: 2)
+            if mediaItem.isVideo {
+                VStack {
+                    Spacer()
+                    HStack {
+                        Spacer()
+                        Image(systemName: "play.circle.fill")
+                            .font(.title2)
+                            .foregroundColor(.white)
+                            .shadow(radius: 2)
+                            .padding(8)
+                    }
+                }
             }
         }
+        }
         .onAppear {
-            loadThumbnail()
+            if thumbnail == nil && mediaItem.thumbnail == nil {
+                loadThumbnail()
+            }
         }
     }
     
     private func loadThumbnail() {
-        let options = PHImageRequestOptions()
-        options.deliveryMode = .opportunistic
-        
-        PHImageManager.default().requestImage(
-            for: mediaItem.asset,
-            targetSize: CGSize(width: 200, height: 200),
-            contentMode: .aspectFill,
-            options: options
-        ) { image, _ in
-            self.thumbnail = image
+        Task {
+            if let asset = mediaItem.asset {
+                let image = await photoLibraryManager.loadThumbnail(for: asset)
+                await MainActor.run {
+                    self.thumbnail = image
+                }
+            }
+            // For file-based media items, thumbnail is already loaded during import
         }
     }
 }
